@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import os
 import torch
 from torchvision import transforms
+import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 class Classification(nn.Module):

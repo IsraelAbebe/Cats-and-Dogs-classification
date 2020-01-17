@@ -5,6 +5,8 @@ import os
 import torch
 from torchvision import transforms
 import numpy as np
+import glob
+from PIL import Image
 
 class CatDogDataset(Dataset):
     def __init__(self, path, transform=None):
