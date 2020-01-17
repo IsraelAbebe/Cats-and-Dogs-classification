@@ -1,3 +1,6 @@
-torch 
-numpy 
-torchvision
+torch==1.4.0
+numpy==1.18.1
+torchvision==0.5.0
+pillow==7.0.0
+matplotlib
+scikit-image

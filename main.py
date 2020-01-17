@@ -1,89 +1,117 @@
-from torch.utils.data import DataLoader,Dataset
-from skimage import io,transform
-import matplotlib.pyplot as plt
-import os
+
+
 import torch
 from torchvision import transforms
-import numpy as np
-
 import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
-
+from skimage import io,transform
 
 
 from dataset import CatDogDataset
-from model import Classification
+from model import *
 
 
+class Trainer():
+    def __init__(self,model,path='Cats-Dogs-with-keras/data/'):
+        self.device  = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.image_size = (64, 64)
+        self.image_row_size = self.image_size[0] * self.image_size[1] * 3
 
-
-
-image_size = (64, 64)
-image_row_size = image_size[0] * image_size[1] * 3
-
-mean = [0.485, 0.456, 0.406]
-std  = [0.229, 0.224, 0.225]
-transform = transforms.Compose([
-                                transforms.Resize(image_size), 
+        self.train_transform = transforms.Compose([
+                                transforms.RandomRotation(30),
+                                transforms.RandomHorizontalFlip(),
+                                transforms.RandomVerticalFlip(),
+                                transforms.Resize(self.image_size), 
                                 transforms.ToTensor(), 
-                                transforms.Normalize(mean, std)])
+                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+
+        self.test_transform = transforms.Compose([transforms.Resize(self.image_size), 
+                                transforms.ToTensor(), 
+                                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+
+        self.path = path 
+        self.criterion = nn.CrossEntropyLoss()
+        
+
+        self.net = model
+        self.net.to(self.device)
+
+    def get_loader(self,path,batch_size = 64):
+        train_data = CatDogDataset(path+'train/',  transform=self.train_transform)
+        test_data = CatDogDataset(path+'validation/',  transform=self.test_transform)
+
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,shuffle=True, num_workers=4)
+        testloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,shuffle=False, num_workers=4)
+
+
+        return trainloader,testloader
+
+    
+    def train(self,epochs=5,lr=0.001,batch_size=64):
+        train_loader,_ = self.get_loader(self.path,batch_size=batch_size)
+
+
+        optimizer = optim.Adam(self.net.parameters(), lr=lr)
+
+        self.net.train()
+        for epoch in range(epochs):
+            for batch_idx, (data, target) in enumerate(train_loader):
+                data,target = data.to(self.device),target.to(self.device)
+
+                optimizer.zero_grad()
+                output = self.net(data)
+                loss = self.criterion(output, target)
+                loss.backward()
+                optimizer.step()
+                if batch_idx % 50 == 0:
+                    print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                        epoch, batch_idx * len(data), len(train_loader.dataset),
+                        100. * batch_idx / len(train_loader), loss.item()))
+            
+    def test(self):
+        _,test_loader = self.get_loader(self.path)
+        self.net.eval()
+
+        accuracy_list = []
+        test_loss = 0
+        correct = 0
+        for data, target in test_loader:
+            output = self.net(data)
+            test_loss += self.criterion(output, target).item()                                                              
+            pred = output.data.max(1, keepdim=True)[1]                                                                
+            correct += pred.eq(target.data.view_as(pred)).cpu().sum().item()
+
+        test_loss /= len(test_loader.dataset)
+        accuracy = 100. * correct / len(test_loader.dataset)
+        accuracy_list.append(accuracy)
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset),accuracy))
 
 
 
-path    = 'Cats-Dogs-with-keras/data/'
-train_data = CatDogDataset(path+'train/',  transform=transform)
-test_data = CatDogDataset(path+'validation/',  transform=transform)
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-file_dir',default='Cats-Dogs-with-keras/data/',help='FILE DIR')
+    parser.add_argument('-batch_size',default=64,help='BATCH SIZE')
+    parser.add_argument('-lr',default=0.001, help='LEARNING RATE')
+    parser.add_argument('-epoch',default=5, help='EPOCH')
+    parser.add_argument('-model',default='SIMPLE',choices=['SIMPLE', 'DEEPER'],
+                    help='Choose the model you are interested in')
+    args = parser.parse_args()
 
+    if args.file_dir and args.batch_size and args.lr and args.epoch:
+        print('Training on Default hyperparameters')
+        print('----------------------------------')
 
-net =  Classification()
+    if args.model == 'SIMPLE':
+        model = CNN()
+    else:
+        model = CNN_ONE()
+    print('Using Model With Architecture:\n')
+    print(model)
+    print('--------')
 
-
-trainloader = torch.utils.data.DataLoader(test_data, batch_size=64,
-                                          shuffle=True, num_workers=4)
-testloader = torch.utils.data.DataLoader(test_data, batch_size=64,
-                                         shuffle=False, num_workers=4)
-
-
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-
-for epoch in range(3):  # loop over the dataset multiple times
-
-    running_loss = 0.0
-    for i, data in enumerate(trainloader, 0):
-        # get the inputs; data is a list of [inputs, labels]
-        inputs, labels = data
-
-        # zero the parameter gradients
-        optimizer.zero_grad()
-
-        # forward + backward + optimize
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
-
-        # print statistics
-        running_loss += loss.item()
-        if i % 100 == 0:    # print every 2000 mini-batches
-            print('[%d, %5d] loss: %.3f' %
-                  (epoch + 1, i + 1, running_loss / 2000))
-            running_loss = 0.0
-
-print('Finished Training')
-
-
-
-
-correct = 0
-total = 0
-with torch.no_grad():
-    for data in testloader:
-        images, labels = data
-        outputs = net(images)
-        _, predicted = torch.max(outputs.data, 1)
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
-
-print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))
+    trainer = Trainer(model,path=args.file_dir)
+    trainer.train(epochs=args.epoch,lr=args.lr,batch_size=args.batch_size)
+    trainer.test()

@@ -1,12 +1,9 @@
-from torch.utils.data import DataLoader,Dataset
-from skimage import io,transform
-import matplotlib.pyplot as plt
 import os
-import torch
-from torchvision import transforms
-import numpy as np
 import glob
 from PIL import Image
+from torchvision import transforms
+from skimage import io,transform
+from torch.utils.data import DataLoader,Dataset
 
 class CatDogDataset(Dataset):
     def __init__(self, path, transform=None):
@@ -26,6 +23,7 @@ class CatDogDataset(Dataset):
         return len(self.file_list)
 
     def __getitem__(self, idx):
+        # print(self.file_list)
         fileName = self.file_list[idx][2]
         classCategory = self.file_list[idx][0]
         im = Image.open(fileName)
