@@ -8,6 +8,8 @@ from torch.utils.data import DataLoader,Dataset
 class CatDogDataset(Dataset):
     def __init__(self, path, transform=None):
         self.classes   = os.listdir(path)
+        self.classes = [i for i in self.classes if not i.startswith('.')]
+        
         self.path      = [f"{path}/{className}" for className in self.classes]
         self.file_list = [glob.glob(f"{x}/*") for x in self.path]
         self.transform = transform

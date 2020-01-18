@@ -13,7 +13,7 @@ from model import *
 
 
 class Trainer():
-    def __init__(self,model,path='Cats-Dogs-with-keras/data/'):
+    def __init__(self,model,path='data/Cat_Dog_data/'):
         self.device  = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.image_size = (64, 64)
         self.image_row_size = self.image_size[0] * self.image_size[1] * 3
@@ -39,7 +39,7 @@ class Trainer():
 
     def get_loader(self,path,batch_size = 64):
         train_data = CatDogDataset(path+'train/',  transform=self.train_transform)
-        test_data = CatDogDataset(path+'validation/',  transform=self.test_transform)
+        test_data = CatDogDataset(path+'test/',  transform=self.test_transform)
 
         trainloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,shuffle=True, num_workers=4)
         testloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,shuffle=False, num_workers=4)
@@ -58,7 +58,7 @@ class Trainer():
         for epoch in range(epochs):
             for batch_idx, (data, target) in enumerate(train_loader):
                 data,target = data.to(self.device),target.to(self.device)
-
+                
                 optimizer.zero_grad()
                 output = self.net(data)
                 loss = self.criterion(output, target)
@@ -92,7 +92,7 @@ class Trainer():
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-file_dir',default='Cats-Dogs-with-keras/data/',help='FILE DIR')
+    parser.add_argument('-file_dir',default='data/Cat_Dog_data/',help='FILE DIR')
     parser.add_argument('-batch_size',default=64,help='BATCH SIZE')
     parser.add_argument('-lr',default=0.001, help='LEARNING RATE')
     parser.add_argument('-epoch',default=5, help='EPOCH')
