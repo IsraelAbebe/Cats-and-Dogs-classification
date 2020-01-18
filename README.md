@@ -30,5 +30,9 @@ accuracy on test dataset.[[1]](https://sites.ualberta.ca/~bang3/files/DogCat_rep
     >> python main.py -h
        usage: main.py [-h] [-file_dir FILE_DIR] [-batch_size BATCH_SIZE] [-lr LR]
               [-epoch EPOCH] [-model {SIMPLE,DEEPER}]
+
+    #Example
+
+    >> python main.py -epoch 10 -model 'DEEPER'
     
    

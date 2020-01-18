@@ -11,7 +11,6 @@ class CustomDataset(Dataset):
         self.classes = [i for i in self.classes if not i.startswith('.')]
         self.file_list = [os.listdir(path+'/'+i) for i in self.classes]
 
-        print('here',path)
         self.transform = transform
 
         files = []
