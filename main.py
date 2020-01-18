@@ -8,8 +8,9 @@ import torch.nn.functional as F
 from skimage import io,transform
 
 
-from dataset import CatDogDataset
+from dataset import CustomDataset
 from model import *
+
 
 
 class Trainer():
@@ -38,8 +39,8 @@ class Trainer():
         self.net.to(self.device)
 
     def get_loader(self,path,batch_size = 64):
-        train_data = CatDogDataset(path+'train/',  transform=self.train_transform)
-        test_data = CatDogDataset(path+'test/',  transform=self.test_transform)
+        train_data = CustomDataset(path+'train/',  transform=self.train_transform)
+        test_data = CustomDataset(path+'test/',  transform=self.test_transform)
 
         trainloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size,shuffle=True, num_workers=4)
         testloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size,shuffle=False, num_workers=4)
@@ -64,7 +65,7 @@ class Trainer():
                 loss = self.criterion(output, target)
                 loss.backward()
                 optimizer.step()
-                if batch_idx % 50 == 0:
+                if batch_idx % 100 == 0:
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                         epoch, batch_idx * len(data), len(train_loader.dataset),
                         100. * batch_idx / len(train_loader), loss.item()))
@@ -92,11 +93,11 @@ class Trainer():
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-file_dir',default='data/Cat_Dog_data/',help='FILE DIR')
-    parser.add_argument('-batch_size',default=64,help='BATCH SIZE')
-    parser.add_argument('-lr',default=0.001, help='LEARNING RATE')
-    parser.add_argument('-epoch',default=5, help='EPOCH')
-    parser.add_argument('-model',default='SIMPLE',choices=['SIMPLE', 'DEEPER'],
+    parser.add_argument('-file_dir',default='data/Cat_Dog_data/',type=str,help='FILE DIR')
+    parser.add_argument('-batch_size',default=64,type=int,help='BATCH SIZE')
+    parser.add_argument('-lr',default=0.001,type=float, help='LEARNING RATE')
+    parser.add_argument('-epoch',default=5,type=int, help='EPOCH')
+    parser.add_argument('-model',default='SIMPLE',type=str,choices=['SIMPLE', 'DEEPER'],
                     help='Choose the model you are interested in')
     args = parser.parse_args()
 
