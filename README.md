@@ -36,3 +36,51 @@ accuracy on test dataset.[[1]](https://sites.ualberta.ca/~bang3/files/DogCat_rep
     >> python main.py -epoch 10 -model 'DEEPER'
     
    
+   
+## Tensorboard Visualizations
+------------------------
+
+### Images
+----------------
+
+<img width="600" alt="Images" src="data/images/images.png">
+
+
+### Architecture
+----------------
+
+<img width="600" alt="Architecture" src="data/images/cnn.png">
+
+
+
+### Train and test Loss
+----------------
+
+<img width="600" alt="Test Loss" src="data/images/training_loss1.png">
+
+
+<img width="600" alt="Train and test Loss" src="data/images/test_loss.png">
+
+
+### Visualizations
+------------------
+
+<img width="600" alt="Visualizations" src="data/images/tsne.png" >
+
+
+### Output
+----------------
+<img width="600" alt="output" src="data/images/vs.png" >
+
+
+### Output
+----------------
+
+<img width="600" alt="output" src="data/images/pr1.png" >
+
+
+<img width="600" alt="output" src="data/images/pr2.png" >
+
+
+
+
