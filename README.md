@@ -40,6 +40,8 @@ accuracy on test dataset.[[1]](https://sites.ualberta.ca/~bang3/files/DogCat_rep
 ## Tensorboard Visualizations
 ------------------------
 
+    >> tensorboard --logdir='TensorBoard/runs/'
+
 ### Images
 ----------------
 
